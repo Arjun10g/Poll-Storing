@@ -1,5 +1,5 @@
-streamlit==1.27.0  # Adjust the version if needed
-pandas==2.1.1      # For handling dataframes
-psycopg2-binary==2.9.7  # For PostgreSQL connection
-matplotlib==3.8.0  # For plotting
-wordcloud==1.9.2   # For generating word clouds
+streamlit
+pandas
+psycopg2-binary
+matplotlib
+wordcloud
