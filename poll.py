@@ -1,17 +1,32 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
+import psycopg2
+from psycopg2 import sql
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 # Database setup
-conn = sqlite3.connect('responses.db')
+DB_HOST = "pollresponseserver.postgres.database.azure.com"
+DB_NAME = "postgres"
+DB_USER = "pollmaster@pollresponseserver"
+DB_PASSWORD = "Rocky_1995"
+
+# Connect to PostgreSQL
+def init_connection():
+    return psycopg2.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
+
+conn = init_connection()
 c = conn.cursor()
 
 # Create table if it doesn't exist
 c.execute('''
 CREATE TABLE IF NOT EXISTS poll_responses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     opinion TEXT,
     ai_scale INTEGER,
     challenges TEXT
@@ -21,8 +36,10 @@ conn.commit()
 
 # Insert data into the database
 def save_response(opinion, ai_scale, challenges):
-    c.execute("INSERT INTO poll_responses (opinion, ai_scale, challenges) VALUES (?, ?, ?)", 
-              (opinion, ai_scale, challenges))
+    c.execute(
+        sql.SQL("INSERT INTO poll_responses (opinion, ai_scale, challenges) VALUES (%s, %s, %s)"),
+        (opinion, ai_scale, challenges)
+    )
     conn.commit()
 
 # Load data for visualization
