@@ -21,9 +21,9 @@ def save_response(opinion, ai_scale, challenges):
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO poll_responses (opinion, ai_scale, challenges, submission_time)
-        VALUES (%s, %s, %s, %s)
-    """, (opinion, ai_scale, challenges, datetime.now()))
+        INSERT INTO poll_responses (opinion, ai_scale, challenges)
+        VALUES (%s, %s, %s)
+    """, (opinion, ai_scale, challenges))
     conn.commit()
     cursor.close()
     conn.close()
@@ -43,7 +43,6 @@ def display_wordcloud(data, column):
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
     st.pyplot(plt)
-
 
 # Streamlit app layout
 st.title("AI in Research Poll")
