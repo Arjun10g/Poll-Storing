@@ -57,27 +57,36 @@ if st.button("Submit"):
     save_response(opinion, ai_scale, challenges)
     st.success("Thank you for your response!")
 
-# Data visualization
-st.header("Poll Results")
-df = load_data()
+# Password-protected section
+st.header("Admin Access: Poll Results")
+admin_password = st.text_input("Enter Admin Password:", type="password")
 
-if not df.empty:
-    # Add unique IDs for each response
-    df['response_id'] = range(1, len(df) + 1)
+if st.button("Access Results"):
+    if admin_password == "qualitative":  # Replace with your actual password
+        st.success("Access granted!")
+        
+        df = load_data()
 
-    # Display the scale responses as a bar chart
-    st.subheader("Scale Responses (1-10)")
-    st.bar_chart(df.set_index('response_id')['ai_scale'])
+        if not df.empty:
+            # Add unique IDs for each response
+            df['response_id'] = range(1, len(df) + 1)
 
-    # Display word cloud for opinions
-    st.subheader("Word Cloud of Open-Ended Opinions")
-    display_wordcloud(df, "opinion")
+            # Display the scale responses as a bar chart
+            st.subheader("Scale Responses (1-10)")
+            st.bar_chart(df.set_index('response_id')['ai_scale'])
 
-    # Display word cloud for challenges
-    st.subheader("Word Cloud of Challenges")
-    display_wordcloud(df, "challenges")
-else:
-    st.write("No responses yet.")
+            # Display word cloud for opinions
+            st.subheader("Word Cloud of Open-Ended Opinions")
+            display_wordcloud(df, "opinion")
+
+            # Display word cloud for challenges
+            st.subheader("Word Cloud of Challenges")
+            display_wordcloud(df, "challenges")
+        else:
+            st.write("No responses yet.")
+    else:
+        st.error("Incorrect password. Access denied.")
+
 
 
 
