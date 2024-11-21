@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-
+ 
 st.markdown(
     """
     <style>
