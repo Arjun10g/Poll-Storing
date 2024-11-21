@@ -19,15 +19,15 @@ st.markdown(
         color: black;
         font-weight: bold;
         letter-spacing:3px;
-        text-shadow: 0px 1px 2px white;
-        font-size: 3.5rem;
+        text-shadow: 2px 1px 2px white;
+        font-size: 2.5rem;
     }
     h2, h3, h4 {
         color: white;
         letter-spacing:2px;
         text-decoration:underline;
         text-underline-offset: 6px;
-        font-size:1.75rem;
+        font-size:1.45rem;
     }
 
     /* Custom text area styling */
@@ -95,7 +95,7 @@ def create_connection():
     return conn
 
 # Insert data into the database
-def save_response(opinion, ai_scale, challenges, ai_adoption, reason_not_using_ai):
+def save_response(opinion, ai_scale, main_reason, ai_adoption):
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -106,9 +106,9 @@ def save_response(opinion, ai_scale, challenges, ai_adoption, reason_not_using_a
     writing = ai_adoption["Writing"]
 
     cursor.execute("""
-        INSERT INTO poll_responses (opinion, ai_scale, challenges, transcription, initial_coding, all_coding, interpretation, writing, reason_for_not_using_ai)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (opinion, ai_scale, challenges, transcription, initial_coding, all_coding, interpretation, writing, reason_not_using_ai))
+        INSERT INTO poll_responses (opinion, ai_scale, main_reason, transcription, initial_coding, all_coding, interpretation, writing)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (opinion, ai_scale, main_reason, transcription, initial_coding, all_coding, interpretation, writing))
     
     conn.commit()
     cursor.close()
@@ -151,18 +151,6 @@ def display_wordcloud(data, column):
         plt.axis('off')
         st.pyplot(plt)
 
-# Function to display horizontal bar charts with dynamic bar width
-def display_horizontal_bar(df, column, title):
-    response_counts = df[column].value_counts()
-    
-    plt.figure(figsize=(10, 6))
-    bar_width = 0.4 if len(response_counts) == 1 else 0.8  # Adjust bar width for single response
-    plt.barh(response_counts.index, response_counts.values, height=bar_width, color='skyblue')
-    plt.xlabel("Number of Responses")
-    plt.ylabel("Options")
-    plt.title(title)
-    st.pyplot(plt)
-
 # Streamlit app layout
 st.title("AI in Research Poll")
 
@@ -170,7 +158,7 @@ st.title("AI in Research Poll")
 st.header("Your Opinion Matters!")
 opinion = st.text_area("What are your initial opinions towards AI in research?")
 ai_scale = st.slider("How do you feel about the use of AI on a scale of 1-10?", 1, 10, 5)
-challenges = st.text_area("What are the difficulties or challenges of qualitative research?")
+main_reason = st.text_area("What is the main reason you are not currently using AI-based tools?")
 
 # Dynamic Likert-scale items with numeric values
 st.subheader("How likely are you to adopt AI for each step of qualitative research?")
@@ -186,22 +174,8 @@ for step in ["Transcription", "Initial Coding", "All Coding", "Interpretation", 
     response = st.radio(f"Adoption for {step}:", list(likert_mapping.keys()), key=f"adoption_{step}")
     ai_adoption[step] = likert_mapping[response]  # Save as numeric value
 
-# New question: Reasons for not implementing AI
-st.subheader("What is the main reason you are not currently using AI-based tools?")
-reason_not_using_ai = st.radio(
-    "Select the main reason:",
-    [
-        "Ethical concerns about AI",
-        "Lack of knowledge on how to implement AI",
-        "Lack of trust in the accuracy of AI tools",
-        "Cost or resource constraints",
-        "Belief that manual methods are more reliable"
-    ],
-    key="reason_not_using_ai"
-)
-
 if st.button("Submit"):
-    save_response(opinion, ai_scale, challenges, ai_adoption, reason_not_using_ai)
+    save_response(opinion, ai_scale, main_reason, ai_adoption)
     st.success("Thank you for your response!")
 
 # Password-protected section
@@ -226,17 +200,13 @@ if st.button("Access Results"):
             st.subheader("Word Cloud of Open-Ended Opinions")
             display_wordcloud(df, "opinion")
 
-            # Display word cloud for challenges
-            st.subheader("Word Cloud of Challenges")
-            display_wordcloud(df, "challenges")
+            # Display word cloud for main reasons not using AI
+            st.subheader("Word Cloud of Reasons for Not Using AI")
+            display_wordcloud(df, "main_reason")
             
             # Display Likert-scale items as bar charts
             st.subheader("Summary of Likert-Scale AI Adoption Choices")
             display_likert_summary(df, ["transcription", "initial_coding", "all_coding", "interpretation", "writing"])
-            
-            # Display reasons for not using AI as a bar chart
-            st.subheader("Reasons for Not Using AI")
-            display_horizontal_bar(df, "reason_for_not_using_ai", "Main Reasons for Not Using AI-Based Tools")
         else:
             st.write("No responses yet.")
     else:
